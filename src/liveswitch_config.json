@@ -1,6 +1,6 @@
 {
-    "applicationId" : "replace-with-your-app-id",
-    "channelId" : "hello-world-channel",
+    "applicationId" : "c0d48b3c-e8ef-4158-b2e9-2c50577a517c",
+    "channelId" : "fourth",
     "gatewayUrl" : "https://cloud.liveswitch.io/",
-    "sharedSecret" : "replace-with-your-shared-secret"
+    "sharedSecret" : "cd14d237fe8940a28160bf7140d161fbc7c8bcc54b1e4baca7640f5a480d1718"
 }

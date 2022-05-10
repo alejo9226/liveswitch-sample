@@ -15,7 +15,7 @@ let userId = "";
 
 function startLs( ) {
 
-
+  // creates the liveswitch client
   client = new liveswitch.Client(url, appID, userId);
   console.log(appID,
     client.getUserId(),
@@ -25,6 +25,7 @@ function startLs( ) {
     [new liveswitch.ChannelClaim(channelID)],
     sharedSecret);
 
+    // gets the token
    let token = liveswitch.Token.generateClientRegisterToken(
     appID,
     client.getUserId(),
@@ -35,12 +36,13 @@ function startLs( ) {
     sharedSecret
   );
 
+  // register the client with the token, then joins the channel
   client.register(token).then(function (channels) {
     channel = channels[0];
     console.log("connected to channel: " + channel.getId());
     token = liveswitch.Token.generateClientJoinToken(client, new liveswitch.ChannelClaim(channelID), sharedSecret);
     client.join(channelID, token).then(function (channel) {
-      console.log("successfully joined channel");
+      console.log("successfully joined channel", channelID);
       handleLocalMedia();
     }).fail(function (ex) {
       console.log("failed to join channel");
@@ -57,7 +59,7 @@ function startLs( ) {
 
 function handleLocalMedia() {
   let audio = true;
-  let video = new liveswitch.VideoConfig(540, 450, 10);
+  let video = new liveswitch.VideoConfig(200, 200, 10);
   localMedia = new liveswitch.LocalMedia(audio, video);
 
   localMedia.start().then(function (lm) {
@@ -65,6 +67,11 @@ function handleLocalMedia() {
     console.log("media capture started");
     layoutManager = new liveswitch.DomLayoutManager(document.getElementById("video"));
     layoutManager.setLocalView(localMedia.getView());
+    // removes remote view
+    //layoutManager.removeRemoteView()
+    //console.log('layoutManager.getVerticalScrollbarWidth()', layoutManager.getVerticalScrollbarWidth())
+    //layoutManager.setBlockWidth(500);
+    //layoutManager.setDirection(2)
 
     openMcuConnection();
 
@@ -73,9 +80,11 @@ function handleLocalMedia() {
   });
 }
 
+// think this function publishes local video
 function openMcuConnection() {
   let remoteMedia = new liveswitch.RemoteMedia();
   let audioStream = new liveswitch.AudioStream(localMedia, remoteMedia);
+  console.log('audio', audioStream);
   let videoStream = new liveswitch.VideoStream(localMedia, remoteMedia);
   connection = channel.createMcuConnection(audioStream, videoStream);
 
@@ -84,7 +93,9 @@ function openMcuConnection() {
     remoteMedia.getView().id = 'remoteView_' + remoteMedia.getId();
   }
   layoutManager.addRemoteView(remoteMedia.getId(), remoteMedia.getView());
+  console.log('remoteMedia', layoutManager.setAlignment(1));
 
+  // if remote connections are failing remove them from the view
   connection.addOnStateChange(function (c) {
     if (c.getState() === liveswitch.ConnectionState.Closing || c.getState() === liveswitch.ConnectionState.Failing) {
       layoutManager.removeRemoteView(remoteMedia.getId());
@@ -192,8 +203,8 @@ class App extends React.Component {
   render() {
     return (
       <div>
-              <div id="video"></div>
-          
+        <div id="video"></div>
+        <div onClick={() => stop()} >X</div>
       </div>      
     );
   }
