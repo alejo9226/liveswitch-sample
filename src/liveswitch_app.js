@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import liveswitch from 'fm.liveswitch';
 import Config from './liveswitch_config.json';
 
@@ -64,7 +64,11 @@ function handleLocalMedia() {
 
   localMedia.start().then(function (lm) {
 
+    localMedia.getView().style.position = 'static';
+    //localMedia.getView().style.background = 'red';
+    localMedia.getView().style.background = 'red';
     console.log("media capture started");
+    //console.log("media capture started", layoutManager.getLayout());
     layoutManager = new liveswitch.DomLayoutManager(document.getElementById("video"));
     layoutManager.setLocalView(localMedia.getView());
     // removes remote view
@@ -83,10 +87,14 @@ function handleLocalMedia() {
 // think this function publishes local video
 function openMcuConnection() {
   let remoteMedia = new liveswitch.RemoteMedia();
+  let preset = new liveswitch.LayoutPreset.getSkype();
   let audioStream = new liveswitch.AudioStream(localMedia, remoteMedia);
   console.log('audio', audioStream);
   let videoStream = new liveswitch.VideoStream(localMedia, remoteMedia);
   connection = channel.createMcuConnection(audioStream, videoStream);
+
+  remoteMedia.getView().style.display = 'flex';
+  console.log('remoteMedia.getVideoTracks()', remoteMedia.getVideoTracks())
 
   // Add the remote video view to the layout.
   if (remoteMedia.getView()) {
@@ -94,6 +102,8 @@ function openMcuConnection() {
   }
   layoutManager.addRemoteView(remoteMedia.getId(), remoteMedia.getView());
   console.log('remoteMedia', layoutManager.setAlignment(1));
+  console.log('remoteMedia setBlockHeight(100)', layoutManager.setBlockHeight(100));
+  console.log('remoteMedia setBlockHeight(100)', layoutManager.applyPreset(preset));
 
   // if remote connections are failing remove them from the view
   connection.addOnStateChange(function (c) {
@@ -183,24 +193,44 @@ let peerJoined = function (name) {
   console.log( name + ' joined.');
 };
 
+//const App = () => {
 class App extends React.Component {
-  
-  state = {
-    url: Config.gatewayUrl,
-    appID: "react-app",
-    userName: "Anonymous",
-  }
 
+
+  /* const [url, setUrl] = useState(Config.gatewayUrl)
+  const [appID, setAppID] = useState("react-app")
+  const [userName, setUserName] = useState("Anonymous") */
+  //const localMediaRef = useRef(null);
+  
+  /* if (!localMedia) {
+    startLs();
+  } */
   constructor(props) {
     super(props);
     startLs();
   }
+  state = {
+    url: Config.gatewayUrl,
+    appID: Config.applicationId,
+    userName: "Anonymous",
+  }
+
+ /*  useEffect(() => {
+    
+    localMediaRef.current = localMedia?.getView();
+    return () => {
+      stop()
+    }
+  }, [localMedia]) */
+
+  
 
   componentWillUnmount() {
     stop();
   }
 
   render() {
+    console.log('locaklMedia', localMedia);
     return (
       <div>
         <div id="video"></div>
